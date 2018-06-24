@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>Example 02 Point Light</title>
+  <script src="../libs/dat.gui.js"></script>
+  <script src="../libs/stats.js"></script>
+  <script src="../libs/three.93.js"></script>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      overflow: hidden;
+    }
+  </style>
+</head>
+<body>
+  <div id="stats-output"></div>
+  <div id="container"></div> 
+  <script>
+    window.onload = init;
+
+  function init() {
+    var stats = initStats();
+    
+    // create a scene,that will hold all our elements such as objects, cameras and lights.
+    var scene = new THREE.Scene();
+    
+    // create a camera, which defines where we're looking at.
+    var camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
+    
+    // create a render and set the size
+    var renderer = new THREE.WebGLRenderer();
+    renderer.setClearColor(0xEEEEEE, 1.0);
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    renderer.shadowMap.enabled = true; // set it need shadow
+    renderer.shadowMap.type = THREE.PCFSoftShadowMap; // default THREE.PCFShadowMap
+
+    var planeGeometry = new THREE.PlaneGeometry(60, 20, 1, 1);
+    var planeMaterial = new THREE.MeshLambertMaterial({color: 0xffffff});
+    var plane = new THREE.Mesh(planeGeometry, planeMaterial);
+    plane.castShadow = false;  // cast shadow 
+    plane.receiveShadow = true; // receive shadow
+
+    plane.rotation.x = -0.5 * Math.PI;
+    plane.position.x = 15;
+    plane.position.y = 0;
+    plane.position.z = 0;
+
+    scene.add(plane);
+
+    var cubeGeometry = new THREE.BoxGeometry(4, 4, 4);
+    var cubeMaterial = new THREE.MeshLambertMaterial({color: 0x7777ff});
+    var cube = new THREE.Mesh(cubeGeometry, cubeMaterial);
+    cube.castShadow = true;
+    cube.receiveShadow = false;
+
+    cube.position.x = -4;
+    cube.position.y = 3;
+    cube.position.z = 0;
+
+    scene.add(cube);
+
+    camera.position.x = -25;
+    camera.position.y = 30;
+    camera.position.z = 25;
+    camera.lookAt(new THREE.Vector3(10, 0, 0));
+    
+    var pointColor = '#ccffcc';
+    var pointLight = new THREE.PointLight(pointColor);
+    pointLight.position.set(10, 10, 10);
+    pointLight.distance = 0;
+    scene.add(pointLight);
+
+    document.getElementById("container").appendChild(renderer.domElement);
+    
+    var step = 0;
+    var controls = new function() {
+      this.rotationSpeed = 0.02;
+      this.bouncingSpeed = 0.03;
+      this.intensity = 1;
+      this.distance = 0;
+    }
+
+    var gui = new dat.GUI();
+    gui.add(controls, 'intensity', 0, 3).onChange(function(e) {
+      pointLight.intensity = e;
+    })
+    gui.add(controls, 'distance', 0, 1000).onChange(function(e) {
+      pointLight.distance = e;
+    })
+
+    function render() {
+      stats.update();
+
+      cube.rotation.x += controls.rotationSpeed;
+      cube.rotation.y += controls.rotationSpeed;
+      cube.rotation.z += controls.rotationSpeed;
+
+      requestAnimationFrame(render);
+      renderer.render(scene, camera);
+    }
+
+    // init left top fps
+    function initStats() {
+      var stats = new Stats();
+      stats.setMode(0) // 0: fps 1: ms
+
+      stats.domElement.style.position = 'absolute';
+      stats.domElement.style.left = '0px';
+      stats.domElement.style.top = '0px';
+
+      document.getElementById("stats-output").appendChild(stats.domElement);
+
+      return stats;
+    }
+
+    render();
+    
+  }
+  </script>
+</body>
+</html>
